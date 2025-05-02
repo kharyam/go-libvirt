@@ -31,8 +31,50 @@ func main() {
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html")
-		fmt.Fprintf(w, "<h1>Libvirt VM Statistics</h1>")
-		fmt.Fprintf(w, "<table border='1'><tr><th>VM Name</th><th>State</th><th>Used Memory</th><th>VCPUs</th><th>CPU Time</th><th>Unused Memory (GB)</th><th>Max Memory (GB)</th></tr>")
+		fmt.Fprintf(w, `
+			<!DOCTYPE html>
+			<html>
+			<head>
+				<title>Libvirt VM Statistics</title>
+				<style>
+					body {
+						font-family: sans-serif;
+						background-color: #e0f2f7; /* Light blue background */
+						margin: 20px;
+					}
+					table {
+						border-collapse: collapse;
+						width: 100%;
+						margin-top: 20px;
+						box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+					}
+					th, td {
+						border: 1px solid #ddd;
+						padding: 8px;
+						text-align: left;
+					}
+					th {
+						background-color: #4682B4; /* Steel blue */
+						color: white;
+					}
+					tr:nth-child(even) {
+						background-color: #ADD8E6; /* Light steel blue */
+					}
+				</style>
+			</head>
+			<body>
+				<h1>Libvirt VM Statistics</h1>
+				<table>
+					<tr>
+						<th>VM Name</th>
+						<th>State</th>
+						<th>Used Memory</th>
+						<th>VCPUs</th>
+						<th>CPU Time</th>
+						<th>Unused Memory (GB)</th>
+						<th>Max Memory (GB)</th>
+					</tr>
+		`)
 
 		// Capture initial CPU times
 		initialCPUTimes := make(map[uint32]float64)
@@ -140,10 +182,24 @@ func main() {
 
 			maxMemoryGB := float64(info.MaxMem) / (1024 * 1024)
 			unusedMemoryGB := float64(unusedMemory) / (1024 * 1024)
-			fmt.Fprintf(w, "<tr><td>%s</td><td>%v</td><td>%.2f%%</td><td>%d</td><td>%.2f%%</td><td>%.2f</td><td>%.2f</td></tr>", name, info.State, memoryUsedPercentage, info.NrVirtCpu, cpuUsagePercentage, unusedMemoryGB, maxMemoryGB)
+			fmt.Fprintf(w, `
+				<tr>
+					<td>%s</td>
+					<td>%v</td>
+					<td>%.2f%%</td>
+					<td>%d</td>
+					<td>%.2f%%</td>
+					<td>%.2f</td>
+					<td>%.2f</td>
+				</tr>
+			`, name, info.State, memoryUsedPercentage, info.NrVirtCpu, cpuUsagePercentage, unusedMemoryGB, maxMemoryGB)
 
 		}
-		fmt.Fprintf(w, "</table>")
+		fmt.Fprintf(w, `
+				</table>
+			</body>
+		</html>
+		`)
 	})
 
 	port := 8080
