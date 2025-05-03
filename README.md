@@ -1,5 +1,17 @@
-# Podman build
+# Local build
 
+```bash
+go mod init libvirt-monitor
+go get -u
+go mod tidy
+git status
+go build
+
+# run
+./libvirt-monitor
+```
+
+# Podman build
 
 ```bash
 sudo podman login quay.io
