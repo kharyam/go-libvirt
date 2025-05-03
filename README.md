@@ -1,4 +1,8 @@
-# Local build
+# libvirt Monitor (go)
+
+Connects to the libvirt socket and provides a simple web dashboard on port 8080
+
+## Local build
 
 ```bash
 go mod init libvirt-monitor
@@ -11,7 +15,7 @@ go build
 ./libvirt-monitor
 ```
 
-# Podman build
+## Podman build
 
 ```bash
 sudo podman login quay.io
@@ -23,7 +27,7 @@ sudo podman push quay.io/kmendez/libvirt-monitor:latest
 sudo podman run -u0 --privileged -v /var/run/libvirt/virtqemud-sock:/var/run/libvirt/virtqemud-sock:Z -p 8080:8080 quay.io/kmendez/libvirt-monitor:latest
 ```
 
-# Connect to libvirt via go locally
+## Connect to libvirt via go locally
 
 ```bash
 podman run -it --rm --privileged -v /var/run/libvirt/virtqemud-sock:/var/run/libvirt/virtqemud-sock:Z fedora:latest /bin/bash
@@ -37,12 +41,12 @@ go build
 ./go-libvirt
 ```
 
-# Use container within truenase scale
+## Use container within truenase scale
 ```bash
 docker run -d --name libvirt-monitor -u0 --privileged -v /run/truenas_libvirt/libvirt-sock-ro:/var/run/libvirt/virtqemud-sock -p 8888:8080  quay.io/kmendez/libvirt-monitor:latest
 ```
 
-## virsh commands
+### virsh commands
 
 ```bash
 virsh -c "qemu+unix:///system?socket=/run/truenas_libvirt/libvirt-sock-ro" dommemstat 6_coreos
