@@ -60,6 +60,24 @@ func main() {
 					tr:nth-child(even) {
 						background-color: #ADD8E6; /* Light steel blue */
 					}
+					.progress-container {
+						position: relative;
+						background-color: #fff; /* White background */
+						border-radius: 5px;
+						outline: 1px solid #000;
+						overflow: hidden; /* Hide the overflow */
+						box-sizing: border-box; /* Include padding and border in element's total width and height */
+					}
+			
+					.progress-bar {
+						height: 20px;
+						background-color: #4CAF50; /* Green */
+						border-radius: 5px;
+						text-align: center;
+						line-height: 20px;
+						transition: width 0.3s ease; /* Smooth transition */
+						box-sizing: border-box; /* Include padding and border in element's total width and height */
+					}
 				</style>
 			</head>
 			<body>
@@ -70,11 +88,11 @@ func main() {
 						<th>State</th>
 						<th>Used Memory</th>
 						<th>VCPUs</th>
-						<th>CPU Time</th>
+						<th>Used CPU</th>
 						<th>Unused Memory (GB)</th>
 						<th>Max Memory (GB)</th>
 					</tr>
-		`)
+`)
 
 		// Capture initial CPU times
 		initialCPUTimes := make(map[uint32]float64)
@@ -182,17 +200,18 @@ func main() {
 
 			maxMemoryGB := float64(info.MaxMem) / (1024 * 1024)
 			unusedMemoryGB := float64(unusedMemory) / (1024 * 1024)
+
 			fmt.Fprintf(w, `
-				<tr>
-					<td>%s</td>
-					<td>%v</td>
-					<td>%.2f%%</td>
-					<td>%d</td>
-					<td>%.2f%%</td>
-					<td>%.2f</td>
-					<td>%.2f</td>
-				</tr>
-			`, name, info.State, memoryUsedPercentage, info.NrVirtCpu, cpuUsagePercentage, unusedMemoryGB, maxMemoryGB)
+			<tr>
+				<td>%s</td>
+				<td>%v</td>
+				<td><div class="progress-container"><div class="progress-bar" style="width: %.2f%%;">%.2f%%</div></div></td>
+				<td>%d</td>
+				<td><div class="progress-container"><div class="progress-bar" style="width: %.2f%%;">%.2f%%</div></div></td>
+				<td>%.2f</td>
+				<td>%.2f</td>
+			</tr>
+			`, name, info.State, memoryUsedPercentage, memoryUsedPercentage, info.NrVirtCpu, cpuUsagePercentage, cpuUsagePercentage, unusedMemoryGB, maxMemoryGB)
 
 		}
 		fmt.Fprintf(w, `
