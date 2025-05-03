@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	libvirt "github.com/libvirt/libvirt-go"
+	libvirt "libvirt.org/go/libvirt"
 )
 
 const nanosecondsPerSecond = 1e9 // 1 billion nanoseconds in a second
@@ -89,7 +89,7 @@ func main() {
 						<th>Used Memory</th>
 						<th>VCPUs</th>
 						<th>Used CPU</th>
-						<th>Unused Memory (GB)</th>
+						<th>Used Memory (GB)</th>
 						<th>Max Memory (GB)</th>
 					</tr>
 `)
@@ -169,8 +169,8 @@ func main() {
 			cpuUsagePercentage := (cpuTimeDifference / (numVCPUs * nanosecondsPerSecond)) * 100
 
 			// Get memory stats (for display)
-			var unusedMemory int
-			memStats, err := dom.MemoryStats(11, 0)
+			var usedMemory int
+			memStats, err := dom.MemoryStats(13, 0)
 			if err != nil {
 				name, err := dom.GetName()
 				if err != nil {
@@ -180,9 +180,10 @@ func main() {
 				}
 			} else {
 				for _, stat := range memStats {
+					log.Printf("%d - %d", stat.Tag, stat.Val)
 					switch libvirt.DomainMemoryStatTags(stat.Tag) {
-					case libvirt.DOMAIN_MEMORY_STAT_UNUSED:
-						unusedMemory = int(stat.Val)
+					case libvirt.DOMAIN_MEMORY_STAT_RSS:
+						usedMemory = int(stat.Val)
 					}
 				}
 			}
@@ -195,11 +196,11 @@ func main() {
 
 			memoryUsedPercentage := 0.0
 			if info.MaxMem > 0 {
-				memoryUsedPercentage = float64(info.MaxMem-uint64(unusedMemory)) / float64(info.MaxMem) * 100
+				memoryUsedPercentage = float64(usedMemory) / float64(info.MaxMem) * 100
 			}
 
 			maxMemoryGB := float64(info.MaxMem) / (1024 * 1024)
-			unusedMemoryGB := float64(unusedMemory) / (1024 * 1024)
+			usedMemoryGB := float64(usedMemory) / (1024 * 1024)
 
 			fmt.Fprintf(w, `
 			<tr>
@@ -211,7 +212,7 @@ func main() {
 				<td>%.2f</td>
 				<td>%.2f</td>
 			</tr>
-			`, name, info.State, memoryUsedPercentage, memoryUsedPercentage, info.NrVirtCpu, cpuUsagePercentage, cpuUsagePercentage, unusedMemoryGB, maxMemoryGB)
+			`, name, info.State, memoryUsedPercentage, memoryUsedPercentage, info.NrVirtCpu, cpuUsagePercentage, cpuUsagePercentage, usedMemoryGB, maxMemoryGB)
 
 		}
 		fmt.Fprintf(w, `
